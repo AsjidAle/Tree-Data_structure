@@ -1,0 +1,202 @@
+#include <iostream>
+using namespace std;
+
+class Node {
+   public:
+  int data;
+  Node *L_node;
+  Node *R_node;
+  int length;
+};
+
+int max(int a, int b);
+
+// Calculate length
+int length(Node *N) {
+  if (N == NULL)
+    return 0;
+  return N->length;
+}
+
+int max(int a, int b) {
+  return (a > b) ? a : b;
+}
+
+// New node creation
+Node *newNode(int data) {
+  Node *node = new Node();
+  node->data = data;
+  node->L_node = NULL;
+  node->R_node = NULL;
+  node->length = 1;
+  return (node);
+}
+
+// Rotate R_node
+Node *R_nodeRotate(Node *y) {
+  Node *x = y->L_node;
+  Node *T2 = x->R_node;
+  x->R_node = y;
+  y->L_node = T2;
+  y->length = max(length(y->L_node),
+          length(y->R_node)) +
+        1;
+  x->length = max(length(x->L_node),
+          length(x->R_node)) +
+        1;
+  return x;
+}
+
+// Rotate L_node
+Node *L_nodeRotate(Node *x) {
+  Node *y = x->R_node;
+  Node *T2 = y->L_node;
+  y->L_node = x;
+  x->R_node = T2;
+  x->length = max(length(x->L_node),
+          length(x->R_node)) +
+        1;
+  y->length = max(length(y->L_node),
+          length(y->R_node)) +
+        1;
+  return y;
+}
+
+// Get the balance factor of each node
+int getBalanceFactor(Node *N) {
+  if (N == NULL)
+    return 0;
+  return length(N->L_node) -
+       length(N->R_node);
+}
+
+// add a node
+Node *addNode(Node *node, int data) {
+  // Find the correct postion and add the node
+  if (node == NULL)
+    return (newNode(data));
+  if (data < node->data)
+    node->L_node = addNode(node->L_node, data);
+  else if (data > node->data)
+    node->R_node = addNode(node->R_node, data);
+  else
+    return node;
+
+  // Update the balance factor of each node and
+  // balance the tree
+  node->length = 1 + max(length(node->L_node),
+               length(node->R_node));
+  int balanceFactor = getBalanceFactor(node);
+  if (balanceFactor > 1) {
+    if (data < node->L_node->data) {
+      return R_nodeRotate(node);
+    } else if (data > node->L_node->data) {
+      node->L_node = L_nodeRotate(node->L_node);
+      return R_nodeRotate(node);
+    }
+  }
+  if (balanceFactor < -1) {
+    if (data > node->R_node->data) {
+      return L_nodeRotate(node);
+    } else if (data < node->R_node->data) {
+      node->R_node = R_nodeRotate(node->R_node);
+      return L_nodeRotate(node);
+    }
+  }
+  return node;
+}
+
+// Node with minimum value
+Node *nodeWithMimumValue(Node *node) {
+  Node *current = node;
+  while (current->L_node != NULL)
+    current = current->L_node;
+  return current;
+}
+
+// remove a node
+Node *removeNode(Node *root, int data) {
+  // Find the node and remove it
+  if (root == NULL)
+    return root;
+  if (data < root->data)
+    root->L_node = removeNode(root->L_node, data);
+  else if (data > root->data)
+    root->R_node = removeNode(root->R_node, data);
+  else {
+    if ((root->L_node == NULL) ||
+      (root->R_node == NULL)) {
+      Node *temp = root->L_node ? root->L_node : root->R_node;
+      if (temp == NULL) {
+        temp = root;
+        root = NULL;
+      } else
+        *root = *temp;
+      free(temp);
+    } else {
+      Node *temp = nodeWithMimumValue(root->R_node);
+      root->data = temp->data;
+      root->R_node = removeNode(root->R_node,
+                   temp->data);
+    }
+  }
+
+  if (root == NULL)
+    return root;
+
+  // Update the balance factor of each node and
+  // balance the tree
+  root->length = 1 + max(length(root->L_node),
+               length(root->R_node));
+  int balanceFactor = getBalanceFactor(root);
+  if (balanceFactor > 1) {
+    if (getBalanceFactor(root->L_node) >= 0) {
+      return R_nodeRotate(root);
+    } else {
+      root->L_node = L_nodeRotate(root->L_node);
+      return R_nodeRotate(root);
+    }
+  }
+  if (balanceFactor < -1) {
+    if (getBalanceFactor(root->R_node) <= 0) {
+      return L_nodeRotate(root);
+    } else {
+      root->R_node = R_nodeRotate(root->R_node);
+      return L_nodeRotate(root);
+    }
+  }
+  return root;
+}
+
+// Print the tree
+void preorder(Node *root, string indent, bool last) {
+  if (root != nullptr) {
+    cout << indent;
+    if (last) {
+      cout << "Right--";
+      indent += "   ";
+    } else {
+      cout << "Left---";
+      indent += "|  ";
+    }
+    cout << root->data << endl;
+    preorder(root->L_node, indent, 0);
+    preorder(root->R_node, indent, 1);
+  }
+}
+
+int main() {
+  Node *root = NULL;
+  root = addNode(root, 33);
+  root = addNode(root, 13);
+  root = addNode(root, 53);
+  root = addNode(root, 9);
+  root = addNode(root, 21);
+  root = addNode(root, 61);
+  root = addNode(root, 8);
+  root = addNode(root, 11);
+  preorder(root, "", 1);
+  root = removeNode(root, 13);
+  cout << "After deleting " << endl;
+  preorder(root, "", 1);
+}
