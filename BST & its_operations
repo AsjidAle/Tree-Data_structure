@@ -1,0 +1,165 @@
+#include<conio.h>
+#include <iostream>
+// using classes instead of struct for optimal use
+class Node
+{
+    int data;
+    Node *left;
+    Node *right;
+
+public:
+    // constructor to initialize the new nodes left right null by default to prevent it in function
+    Node()
+    {
+        left = right = nullptr;
+    }
+    // utility functions
+    void insert(Node **x, int n);
+    void preoreder_traverse(Node *x);
+    void inorder_traverse(Node *x); // inorder to check the sorting in asscending way
+    void postorder_traverse(Node *x);
+    bool deletion(Node **x, int n);
+};
+
+void Node::insert(Node **x, int n)
+{
+    if (*x == nullptr)
+    {
+        *x = new Node;
+        (*x)->data = n;
+        return;
+    }
+    if ((*x)->data < n)
+    {
+        insert(&(*x)->right, n);
+    }
+    else
+    {
+        insert(&(*x)->left, n);
+    }
+}
+void Node::preoreder_traverse(Node *x)
+{
+    if (x == nullptr)
+    {
+        return;
+    }
+    std::cout << x->data;
+    preoreder_traverse(x->left);
+    preoreder_traverse(x->right);
+}
+void Node::inorder_traverse(Node *x)
+{
+    if (x == nullptr)
+    {
+        return;
+    }
+    inorder_traverse(x->left);
+    std::cout << x->data;
+    inorder_traverse(x->right);
+}
+void Node::postorder_traverse(Node *x)
+{
+    if (x == nullptr)
+    {
+        return;
+    }
+    postorder_traverse(x->left);
+    postorder_traverse(x->right);
+    std::cout << x->data;
+}
+bool Node::deletion(Node **x, int n)
+{
+    if (*x == nullptr)
+    {
+        return 0;
+    }
+    Node *current = *x;
+    if ((*x)->data == n)
+    {
+        if ((*x)->left == nullptr && (*x)->right == nullptr)
+        {
+            delete (*x);
+            return 1;
+        }
+        else if ((*x)->left == nullptr)
+        {
+            *x = (*x)->right;
+            delete current;
+            return 1;
+        }
+        else if ((*x)->right == nullptr)
+        {
+            *x = (*x)->left;
+            delete current;
+            return 1;
+        }
+        else
+        {
+            Node *previous = (*x)->left, *next;
+            if (current->right == nullptr)
+            {
+                current->right = current->left;
+                *x = (*x)->left;
+                delete current;
+                return 1;
+            }
+            else if(current->right->left==nullptr){
+                current->right->left=current->left;
+                *x=current->right;
+                delete current;
+                return 1;
+            }
+            else {
+                previous=current->left;
+                while(previous->right->right!=nullptr){
+                    previous=previous->right;
+                }
+                next=previous->right;
+                previous->right=previous->right->left;
+                next->left=(*x)->left;
+                next->right=(*x)->right;
+                *x=next;
+                delete current;
+                return 1;
+            }
+        }
+    }
+    if (current->data < n)
+    {
+        deletion(&((*x)->right),n);
+    }
+    else
+    {
+        deletion(&(*x)->left,n);
+    }
+}
+
+int main()
+{
+    Node *x = nullptr;
+    //checking before insertion any node is there any node in tree??
+    x->inorder_traverse(x);
+    //inserting some data in the tree
+    x->insert(&x, 3);
+    x->insert(&x, 5);
+    x->insert(&x, 7);
+    x->insert(&x, 2);
+    //deletion fucntion called to delete some data
+    (x->deletion(&x,1))?std::cout<<"True! sucessfully deleted":std::cout<<"False!! Data does not exists in tree";
+    //if there is not any data in the tree searched to delete so it would display fasle
+    std::cout<<'\n'<<"pre-order : ";//traversal with pre-oreder
+    x->preoreder_traverse(x);
+    std::cout<<'\n'<<"Inorder : ";//traversal with in-oreder
+    x->inorder_traverse(x);
+    std::cout<<"\nPostorder : ";//traversal with post order
+    x->inorder_traverse(x);
+    //deleing some data from tree that is in it
+    std::cout<<"\nBefore deletion tree in in-ordere way : ";
+    x->inorder_traverse(x);
+    x->deletion(&x,5);
+    std::cout<<"\nAfter deletion tree in in-order way : ";
+    x->inorder_traverse(x);
+    getch();
+    return 0;
+}
