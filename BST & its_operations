@@ -21,6 +21,7 @@ public:
     bool deletion(Node **x, int n);
 };
 
+
 void Node::insert(Node **x, int n)
 {
     if (*x == nullptr)
